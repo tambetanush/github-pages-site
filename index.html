@@ -1,14 +1,463 @@
+<!--
+  github-pages-portfolio-index.html
+  - Single-file, ready-to-deploy portfolio for GitHub Pages
+  - Monospace main font (Space Mono via Google Fonts) — easily changeable
+  - Data-driven projects section: edit the `projects` array in the <script> to add/remove projects
 
-    <!DOCTYPE html>
-    <html lang="en">
+  DEPLOY:
+  1) Create a new repository named: <your-username>.github.io
+  2) Add this file as `index.html` in the repository root and push.
+  3) GitHub Pages will serve https://<your-username>.github.io/ (usually instantly or within a minute).
+  For project pages (not user/organization site): push to `gh-pages` branch or enable GitHub Pages in repo settings.
+
+  EXTEND:
+  - Add sections by copying the <section id="..."> block and editing CSS variables if needed.
+  - Add projects by editing the `projects` array below — each project supports title, desc, link, tags, year, image.
+  - To add blog posts, add entries to `posts` array and a small template (similar to `renderProjects()`).
+
+  LICENSE: Use as you wish. If you publish, consider adding an explicit license file.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>My Work</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Tanush Tambe — Portfolio</title>
+        <meta
+            name="description"
+            content="Personal portfolio — projects, about, contact" />
+
+        <!-- Monospace font -->
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap"
+            rel="stylesheet" />
+
+        <style>
+            :root {
+                --bg: #0b0f14;
+                --card: #0f1720;
+                --muted: #9aa4b2;
+                --accent: #60a5fa;
+                --glass: rgba(255, 255, 255, 0.03);
+                --radius: 14px;
+                --pad: 20px;
+                --mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo,
+                    Monaco, "Roboto Mono", "Courier New", monospace;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            html,
+            body {
+                height: 100%;
+            }
+            body {
+                margin: 0;
+                font-family: var(--mono);
+                background: linear-gradient(180deg, var(--bg), #071021 140%);
+                color: #e6eef6;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                line-height: 1.4;
+                padding: 32px;
+            }
+
+            .container {
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+
+            header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 28px;
+            }
+            .brand {
+                display: flex;
+                gap: 14px;
+                align-items: center;
+            }
+            .logo {
+                width: 56px;
+                height: 56px;
+                border-radius: 10px;
+                background: linear-gradient(135deg, var(--accent), #7c3aed);
+                display: grid;
+                place-items: center;
+                font-weight: 700;
+                font-size: 18px;
+            }
+            h1 {
+                font-size: 20px;
+                margin: 0;
+            }
+            p.lead {
+                margin: 0;
+                color: var(--muted);
+                font-size: 13px;
+            }
+
+            nav a {
+                color: var(--muted);
+                text-decoration: none;
+                margin-left: 18px;
+                font-size: 14px;
+            }
+            nav a:hover {
+                color: var(--accent);
+            }
+
+            main {
+                display: grid;
+                grid-template-columns: 1fr 380px;
+                gap: 28px;
+            }
+
+            /* Left column content */
+            .card {
+                background: linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.02),
+                    transparent
+                );
+                border-radius: var(--radius);
+                padding: var(--pad);
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.03);
+            }
+
+            .about {
+                margin-bottom: 18px;
+            }
+            .about h2 {
+                margin: 0 0 8px 0;
+                font-size: 16px;
+            }
+            .about p {
+                margin: 0;
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            /* Projects grid */
+            .projects {
+                display: grid;
+                gap: 12px;
+            }
+            .project {
+                display: flex;
+                gap: 14px;
+                align-items: flex-start;
+                padding: 14px;
+                border-radius: 12px;
+                background: var(--card);
+                border: 1px solid rgba(255, 255, 255, 0.02);
+            }
+            .project .meta {
+                min-width: 72px;
+            }
+            .project .meta .img {
+                width: 72px;
+                height: 72px;
+                border-radius: 8px;
+                background: linear-gradient(135deg, #0b1220, #0f1b2a);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+            }
+            .project h3 {
+                margin: 0;
+                font-size: 15px;
+            }
+            .project p {
+                margin: 6px 0 0 0;
+                color: var(--muted);
+                font-size: 13px;
+            }
+            .tags {
+                margin-top: 10px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .tag {
+                font-size: 11px;
+                padding: 6px 8px;
+                border-radius: 999px;
+                background: var(--glass);
+                color: var(--muted);
+                border: 1px solid rgba(255, 255, 255, 0.02);
+            }
+
+            /* Right column */
+            aside .card {
+                position: sticky;
+                top: 32px;
+            }
+            .contact-list {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .contact-item {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+            .contact-item a {
+                color: var(--muted);
+                text-decoration: none;
+            }
+
+            footer {
+                margin-top: 28px;
+                color: var(--muted);
+                font-size: 13px;
+                text-align: center;
+            }
+
+            /* Responsive */
+            @media (max-width: 980px) {
+                main {
+                    grid-template-columns: 1fr;
+                }
+                aside .card {
+                    position: static;
+                }
+                body {
+                    padding: 20px;
+                }
+                nav a {
+                    margin-left: 12px;
+                }
+            }
+
+            /* small utilities */
+            .muted {
+                color: var(--muted);
+            }
+            .btn {
+                display: inline-block;
+                padding: 8px 12px;
+                border-radius: 8px;
+                text-decoration: none;
+                border: 1px solid rgba(255, 255, 255, 0.04);
+                font-size: 13px;
+            }
+            .btn-accent {
+                background: linear-gradient(90deg, var(--accent), #7c3aed);
+                color: #051227;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+            }
+        </style>
     </head>
     <body>
-        <h1>Welcome to My GitHub Pages Site</h1>
-        <p>Contact: <!--email_off-->22f3002248@ds.study.iitm.ac.in<!--/email_off--></p>
+        <div class="container">
+            <header>
+                <div class="brand">
+                    <div class="logo">YN</div>
+                    <div>
+                        <h1>Your Name</h1>
+                        <p class="lead">
+                            Software Engineer · Open Source · Projects
+                        </p>
+                    </div>
+                </div>
+                <nav>
+                    <a href="#projects">Projects</a>
+                    <a href="#about">About</a>
+                    <a href="#contact">Contact</a>
+                </nav>
+            </header>
+
+            <main>
+                <section>
+                    <div class="card about" id="about">
+                        <h2>About</h2>
+                        <p>
+                            Hi — I'm <strong>Your Name</strong>. I build web
+                            apps, tools, and experiments. This page is
+                            intentionally minimal and uses a monospace aesthetic
+                            for readability and personality. Edit the
+                            <code>projects</code> array in the script to add
+                            your work.
+                        </p>
+                    </div>
+
+                    <div class="card" id="projects">
+                        <h2 style="margin-top: 0">Selected Projects</h2>
+                        <div class="projects" id="projectsGrid">
+                            <!-- Projects rendered by JS -->
+                        </div>
+                        <div style="margin-top: 12px; text-align: right">
+                            <a class="btn" id="viewAll" href="#">View all →</a>
+                        </div>
+                    </div>
+
+                    <div class="card" id="notes" style="margin-top: 14px">
+                        <h2 style="margin-top: 0">Notes</h2>
+                        <p class="muted">
+                            This single file is meant to be dropped in a GitHub
+                            Pages repo. The design is intentionally neutral —
+                            tweak colors in the :root variables. Replace the
+                            logo box with an SVG if you prefer.
+                        </p>
+                    </div>
+                </section>
+
+                <aside>
+                    <div class="card">
+                        <h3 style="margin-top: 0">Contact</h3>
+                        <div class="contact-list" id="contact">
+                            <div class="contact-item">
+                                <strong>Email:</strong
+                                ><a href="mailto:you@example.com">
+                                    you@example.com</a
+                                >
+                            </div>
+                            <div class="contact-item">
+                                <strong>GitHub:</strong
+                                ><a
+                                    href="https://github.com/yourusername"
+                                    target="_blank">
+                                    github.com/yourusername</a
+                                >
+                            </div>
+                            <div class="contact-item">
+                                <strong>LinkedIn:</strong
+                                ><a
+                                    href="https://linkedin.com/in/yourhandle"
+                                    target="_blank">
+                                    linkedin.com/in/yourhandle</a
+                                >
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; display: flex; gap: 8px">
+                            <a class="btn" href="#projects">See projects</a>
+                            <a
+                                class="btn btn-accent"
+                                href="mailto:you@example.com"
+                                >Get in touch</a
+                            >
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: 12px">
+                        <h3 style="margin-top: 0">Quick Links</h3>
+                        <div
+                            style="
+                                display: flex;
+                                flex-direction: column;
+                                gap: 8px;
+                                margin-top: 8px;
+                            ">
+                            <a class="btn" href="#">Resume</a>
+                            <a class="btn" href="#">Blog</a>
+                            <a class="btn" href="#">Talks</a>
+                        </div>
+                    </div>
+                </aside>
+            </main>
+
+            <footer>
+                © <span id="year"></span> Your Name — Built with ❤️ and
+                monospace.
+            </footer>
+        </div>
+
+        <script>
+            // =====================
+            // Data: edit this section to add projects
+            // Each project: {title, desc, link, tags:[], year, image}
+            // image can be a URL (recommended) or omitted to use fallback initials in the thumbnail box.
+            const projects = [
+                {
+                    title: "Soil Analyzer — ESP32",
+                    desc: "An embedded soil analyzer with sensors and ML to recommend crops (demo & docs).",
+                    link: "https://github.com/yourusername/soil-analyzer",
+                    tags: ["Embedded", "Python", "ML"],
+                    year: 2025,
+                    image: "",
+                },
+                {
+                    title: "Portfolio Site",
+                    desc: "This GitHub Pages portfolio (single-file, easy to extend).",
+                    link: "#",
+                    tags: ["Web", "HTML", "CSS"],
+                    year: 2025,
+                },
+                {
+                    title: "Parking Reservation System",
+                    desc: "Flask-based parking reservation with realistic seeded data and profiles.",
+                    link: "https://github.com/yourusername/parking-reservation",
+                    tags: ["Flask", "SQLite"],
+                    year: 2025,
+                },
+            ];
+
+            // =====================
+            function renderProjects() {
+                const grid = document.getElementById("projectsGrid");
+                grid.innerHTML = "";
+                projects.forEach((p) => {
+                    const el = document.createElement("div");
+                    el.className = "project";
+
+                    const initials = p.title
+                        .split(" ")
+                        .map((s) => s[0])
+                        .slice(0, 2)
+                        .join("")
+                        .toUpperCase();
+                    const imgBox = document.createElement("div");
+                    imgBox.className = "meta";
+                    imgBox.innerHTML = `<div class="img">${
+                        p.image
+                            ? '<img src="' +
+                              p.image +
+                              '" alt="' +
+                              p.title +
+                              '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">'
+                            : initials
+                    }</div>`;
+
+                    const info = document.createElement("div");
+                    info.innerHTML = `<h3><a href="${
+                        p.link
+                    }" target="_blank" style="color:inherit;text-decoration:none">${
+                        p.title
+                    }</a> <span style="color:var(--muted);font-size:12px">• ${
+                        p.year || ""
+                    }</span></h3><p>${p.desc}</p>`;
+
+                    const tags = document.createElement("div");
+                    tags.className = "tags";
+                    (p.tags || []).forEach((t) => {
+                        const tag = document.createElement("span");
+                        tag.className = "tag";
+                        tag.textContent = t;
+                        tags.appendChild(tag);
+                    });
+
+                    info.appendChild(tags);
+                    el.appendChild(imgBox);
+                    el.appendChild(info);
+                    grid.appendChild(el);
+                });
+            }
+
+            // Small helpers
+            document.getElementById("year").textContent =
+                new Date().getFullYear();
+            renderProjects();
+
+            // Optional: keyboard shortcut 'p' to jump to projects
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "p") location.hash = "#projects";
+            });
+        </script>
     </body>
-    </html>
-    
+</html>
